@@ -5,5 +5,6 @@ RUN chmod +x /usr/bin/entypoint
 
 ENV PSQL_PORT=5432
 ENV PSQL_ROOT_USERNAME=postgres
+ENV PSQL_ROOT_DATABASE=postgres
 WORKDIR /root
 ENTRYPOINT ["/usr/bin/entypoint"]

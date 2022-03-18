@@ -41,10 +41,31 @@ then
 fi
 #set root passowrd for authorize
 export PGPASSWORD=$PSQL_ROOT_PASSWORD
+export PGHOST=$PSQL_HOST
+export PGPORT=$PSQL_PORT
+export PGUSER=$PSQL_ROOT_USERNAME
+export PGDATABASE=$PSQL_ROOT_DATABASE
 
-echo "CREATE DATABASE \"$PSQL_DATABASE\";" | psql -h"$PSQL_HOST" -p"$PSQL_PORT" -U"$PSQL_ROOT_USERNAME" $PSQL_ROOT_DATABASE
-echo "CREATE USER \"$PSQL_USERNAME\" WITH ENCRYPTED PASSWORD '$PSQL_PASSWORD';" | psql -h"$PSQL_HOST" -p"$PSQL_PORT" -U"$PSQL_ROOT_USERNAME" $PSQL_ROOT_DATABASE
-echo "GRANT ALL PRIVILEGES ON DATABASE \"$PSQL_DATABASE\" TO \"$PSQL_USERNAME\";" | psql -h"$PSQL_HOST" -p"$PSQL_PORT" -U"$PSQL_ROOT_USERNAME" $PSQL_ROOT_DATABASE
+psql -c "CREATE DATABASE \"$PSQL_DATABASE\";"
+psql -c "CREATE USER \"$PSQL_USERNAME\" WITH ENCRYPTED PASSWORD '$PSQL_PASSWORD';"
+psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$PSQL_DATABASE\" TO \"$PSQL_USERNAME\";"
+
+#fix repmitions if database from dump
+for tbl in `psql -qAt -c "select tablename from pg_tables where schemaname = 'public';" $PSQL_DATABASE`
+do
+	psql -c "alter table \"$tbl\" owner to $PSQL_USERNAME" $PSQL_DATABASE
+
+done
+
+for tbl in `psql -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'public';" $PSQL_DATABASE`
+do
+	psql -c "alter sequence \"$tbl\" owner to $PSQL_USERNAME" $PSQL_DATABASE
+done
+
+for tbl in `psql -qAt -c "select table_name from information_schema.views where table_schema = 'public';" $PSQL_DATABASE`
+do
+	psql -c "alter view \"$tbl\" owner to $PSQL_USERNAME" $PSQL_DATABASE
+done
 
 
 SQL_FILES=`find . -type f -name '*.sql'`
@@ -53,10 +74,12 @@ if [ ! -z "$SQL_FILES" ]
 then
 # set user password for authorize
 export PGPASSWORD=$PSQL_PASSWORD
+export PGUSER=$PSQL_USERNAME
+export PGDATABASE=$PSQL_DATABASE
 	for i in $SQL_FILES
 	do
 		echo $i
-		psql -h"$PSQL_HOST" -p"$PSQL_PORT" -U"$PSQL_USERNAME" $PSQL_DATABASE < $i
+		psql < $i
 	done
 else
 	echo "No sql file to undump"

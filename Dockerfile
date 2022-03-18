@@ -1,7 +1,7 @@
 FROM alpine:3.9
 RUN apk add --no-cache postgresql
 COPY entrypoint.sh /usr/bin/entypoint
-RUN addgroup -g 1000 slm; \
+RUN addgroup -g 1000 psql; \
     adduser -DHG psql -u 1000 psql; \
     chmod +x /usr/bin/entypoint
 

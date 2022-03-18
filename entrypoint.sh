@@ -54,18 +54,18 @@ psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$PSQL_DATABASE\" TO \"$PSQL_USERNAME
 #fix repmitions if database from dump
 for tbl in `psql -qAt -c "select tablename from pg_tables where schemaname = 'public';" $PSQL_DATABASE`
 do
-	psql -c "alter table \"$tbl\" owner to $PSQL_USERNAME" $PSQL_DATABASE
+	psql -c "alter table \"$tbl\" owner to \"$PSQL_USERNAME\";" $PSQL_DATABASE
 
 done
 
 for tbl in `psql -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'public';" $PSQL_DATABASE`
 do
-	psql -c "alter sequence \"$tbl\" owner to $PSQL_USERNAME" $PSQL_DATABASE
+	psql -c "alter sequence \"$tbl\" owner to \"$PSQL_USERNAME\";" $PSQL_DATABASE
 done
 
 for tbl in `psql -qAt -c "select table_name from information_schema.views where table_schema = 'public';" $PSQL_DATABASE`
 do
-	psql -c "alter view \"$tbl\" owner to $PSQL_USERNAME" $PSQL_DATABASE
+	psql -c "alter view \"$tbl\" owner to \"$PSQL_USERNAME\";" $PSQL_DATABASE
 done
 
 
